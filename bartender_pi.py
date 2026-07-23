@@ -24,15 +24,16 @@ PUMPS = {
 }
 
 # Configuración del motor DC
-VELOCIDAD = 80        # 0-100 (duty cycle en %)
+VELOCIDAD = 100       # 0-100 (duty cycle en %)
 PWM_FREQ = 1000       # Frecuencia del PWM en Hz
 
-# Las posiciones de las bombas (ver BOMBAS_CONFIG en config.py) están definidas
-# directamente en SEGUNDOS de movimiento de motor (medidos empíricamente a VELOCIDAD=80),
-# no en centímetros físicos. FACTOR_CALIBRACION es un multiplicador de ajuste fino:
-# déjalo en 1.0 si tus tiempos medidos ya son exactos. Súbelo (ej. 1.05) si el riel
-# se queda corto, o bájalo (ej. 0.95) si se pasa de la posición.
-FACTOR_CALIBRACION = 1.0
+# Las posiciones de las bombas (ver BOMBAS_CONFIG en config.py) NO están en segundos
+# directos ni en cm físicos reales: son un valor arbitrario calibrado a mano, que se
+# convierte a segundos de motor multiplicando por SEGUNDOS_POR_CM. Los valores actuales
+# de BOMBAS_CONFIG (0, 500, 1280, 2200) fueron calibrados físicamente con esta fórmula
+# y VELOCIDAD=100 — si cambias cualquiera de los dos, hay que recalibrar de nuevo.
+SEGUNDOS_POR_CM = 0.001
+FACTOR_CALIBRACION = 1.0  # Ajuste fino adicional encima de SEGUNDOS_POR_CM (déjalo en 1.0)
 pwm_motor = None
 
 # ==========================================
@@ -64,7 +65,9 @@ def setup_gpio():
 def detener_motor():
     GPIO.output(PIN_IN1, GPIO.LOW)
     GPIO.output(PIN_IN2, GPIO.LOW)
-    pwm_motor.ChangeDutyCycle(0)
+    GPIO.output(PIN_ENA, GPIO.LOW)
+    if pwm_motor:
+        pwm_motor.ChangeDutyCycle(0)
 
 def mover_motor(target_seg):
     global current_position
@@ -72,9 +75,9 @@ def mover_motor(target_seg):
         return
         
     distance = target_seg - current_position
-    tiempo_movimiento = abs(distance) * FACTOR_CALIBRACION
-    
-    print(f"⚙️ [MOTOR] Moviendo a posición {target_seg}s (Tiempo estimado: {tiempo_movimiento:.2f}s)...")
+    tiempo_movimiento = abs(distance) * SEGUNDOS_POR_CM * FACTOR_CALIBRACION
+
+    print(f"⚙️ [MOTOR] Moviendo a posición {target_seg} (Tiempo estimado: {tiempo_movimiento:.2f}s)...")
     
     # Dirección
     if distance > 0:
@@ -87,7 +90,9 @@ def mover_motor(target_seg):
         GPIO.output(PIN_IN2, GPIO.LOW)
         
     # Arrancar motor usando PWM
-    pwm_motor.ChangeDutyCycle(VELOCIDAD)
+    GPIO.output(PIN_ENA, GPIO.HIGH)
+    if pwm_motor:
+        pwm_motor.ChangeDutyCycle(VELOCIDAD)
     
     # Esperar el tiempo calculado
     time.sleep(tiempo_movimiento)
