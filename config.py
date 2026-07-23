@@ -124,7 +124,7 @@ ROBOT_ENABLED = True
 ROBOT_CONNECTION_TYPE = "TCP" # "TCP" o "SERIAL"
 # Cambiado a 127.0.0.1 y 8888 para usar el simulador_pi.py localmente.
 # Cambiar de nuevo a "192.168.10.2" y 5001 cuando la Raspberry Pi esté conectada.
-ROBOT_IP = "192.168.25.60"
+ROBOT_IP = "127.0.0.1"        # La Pi corre bartender_pi.py localmente ahora (modo standalone)
 ROBOT_PORT = 5001             
 ROBOT_SERIAL_PORT = "COM3"    # Puerto Serial si es USB Serial
 ROBOT_SERIAL_BAUD = 9600
