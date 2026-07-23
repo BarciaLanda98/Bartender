@@ -371,12 +371,11 @@ class VoiceAssistant:
                             self.voice.speak_async(fallback_text)
                             is_first = False
                             
-                        # El backend ya procesó e inyectó todo el texto a Edge-TTS.
-                        # Esperamos a que el VoiceWorker termine de sintetizar y emitir todos los chunks
-                        self.voice.wait_until_done()
-                        self.set_state("all_audio_sent")
-                        
-                        # Si hay comando de robot, enviarlo INMEDIATAMENTE
+                        # Si hay comando de robot, enviarlo YA (en paralelo con lo que MIA sigue
+                        # hablando/sintetizando) en vez de esperar a que termine toda la charla —
+                        # así el trago se empieza a preparar mientras MIA todavía habla, como un
+                        # bartender real, y no se siente lento cuando la respuesta es larga.
+                        thanks_text = None
                         if robot_command:
                             if robot_command.startswith("PREPARAR:"):
                                 readable_name = robot_command.replace("PREPARAR:", "", 1).strip()
@@ -387,12 +386,17 @@ class VoiceAssistant:
                             else:
                                 readable_name = robot_command
                                 thanks_text = f"Tu bebida está lista. ¡Disfrútala!"
-                                
+
                             self.set_state("preparing_drink", data=readable_name)
                             print(f"⚙️ Acción de Robot: {robot_command} ({readable_name})")
                             self.robot.send_drink_command(robot_command)
-                        
-                        # Ahora bloqueamos la reactivación de listening local del orquestador 
+
+                        # El backend ya procesó e inyectó todo el texto a Edge-TTS.
+                        # Esperamos a que el VoiceWorker termine de sintetizar y emitir todos los chunks
+                        self.voice.wait_until_done()
+                        self.set_state("all_audio_sent")
+
+                        # Ahora bloqueamos la reactivación de listening local del orquestador
                         # hasta que el celular confirme que la COLA EN JavaScript terminó de sonar.
                         self.audio_playback_done.wait(timeout=60.0)
                         
