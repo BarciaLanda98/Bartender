@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050508">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/avatars/neutral.png">
+    <title>MIA AI Avatar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;600&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #050508;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #particles-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            z-index: -1;
+        }
+
+        .mia-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .avatar-container {
+            width: 95vw;
+            max-width: 1400px;
+            /* Permitir que llene más el ancho de la pantalla */
+            max-height: 70vh;
+            display: flex;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        #avatar-img {
+            width: 100%;
+            height: 100%;
+            max-height: 65vh;
+            object-fit: contain;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+            transition: box-shadow 0.3s, transform 0.12s ease-out;
+        }
+
+        .status-panel {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        #state-text {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 4px;
+            font-size: 1.2rem;
+            color: #00f0ff;
+        }
+
+        /* Unlock Overlay */
+        #unlock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00f0ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            cursor: pointer;
+            font-size: 2rem;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        #unlock-overlay span {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-top: 20px;
+        }
+
+        /* Drink Menu Overlay */
+        #drink-menu {
+            position: absolute;
+            left: 30px;
+            bottom: 120px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            font-family: 'Orbitron', sans-serif;
+            color: #ccc;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu-title {
+            color: #00f0ff;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .menu-item {
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .menu-item .pump {
+            color: #00f0ff;
+            font-weight: bold;
+        }
+
+        .menu-item.active {
+            color: #fff;
+            text-shadow: 0 0 10px #00f0ff;
+            transform: scale(1.05);
+            margin-left: 10px;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 600px) {
+            #drink-menu {
+                left: 10px;
+                bottom: 110px;
+                padding: 15px;
+                font-size: 0.8rem;
+            }
+
+            .subtitle-box {
+                min-height: 80px;
+                max-width: 600px;
+                text-align: center;
+                background: rgba(255, 255, 255, 0.05);
+                padding: 15px 30px;
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+            }
+        }
+
+        #subtitle-text {
+            font-size: 1.3rem;
+            line-height: 1.5;
+            color: #eee;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        /* Orbe Central PTT */
+        #btn-ptt {
+            width: auto;
+            height: 60px;
+            padding: 0 30px;
+            border-radius: 30px;
+            border: none;
+            background: radial-gradient(circle at 30% 30%, #00f0ff, #0088ff);
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 30px rgba(255, 51, 102, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 51, 102, 0);
+            }
+        }
+
+        #btn-ptt.listening {
+            background: radial-gradient(circle at 30% 30%, #ff3366, #ff0055);
+            animation: pulse 1.5s infinite;
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 51, 102, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        #btn-ptt.processing {
+            background: radial-gradient(circle at 30% 30%, #b200ff, #7700cc);
+            transform: scale(1.05);
+        }
+
+        /* Botón secundario Visión */
+        #btn-vision {
+            position: absolute;
+            right: -80px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.3s;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        #btn-vision:hover {
+            border-color: #b200ff;
+            color: #b200ff;
+            box-shadow: 0 0 15px rgba(178, 0, 255, 0.4);
+            transform: scale(1.1);
+        }
+
+        @keyframes breathing {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(178, 0, 255, 0.4);
+            }
+
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 50px rgba(178, 0, 255, 0.8);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(178, 0, 255, 0.4);
+            }
+        }
+
+        .thinking-animation {
+            animation: breathing 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="particles-bg"></div>
+
+    <!-- Drink Menu Overlay -->
+    <div id="drink-menu">
+        <div class="menu-title">Drinks Menu</div>
+        <div class="menu-item" id="menu-tormenta">
+            <span>Paloma</span> <span class="pump">[1]</span>
+        </div>
+        <div class="menu-item" id="menu-brisa">
+            <span>Margarita con toronja</span> <span class="pump">[2]</span>
+        </div>
+        <div class="menu-item" id="menu-atardecer">
+            <span>Tequila Citrus</span> <span class="pump">[3]</span>
+        </div>
+        <div class="menu-item" id="menu-bandera">
+            <span>Paloma Dulce</span> <span class="pump">[4]</span>
+        </div>
+    </div>
+
+    <!-- Eliminamos el video oculto y canvas ya que usaremos la cámara local de la laptop -->
+    <div class="mia-container">
+        <div id="unlock-overlay">
+            <h2>Toca la pantalla para iniciar MIA</h2>
+            <span>(Esto desbloquea el sistema de audio)</span>
+        </div>
+
+        <div class="header">
+            <div class="status-dot" id="status-dot"></div>
+            <div class="status-text" id="status-label">Conectando...</div>
+        </div>
+        <!-- Renderizado de Avatar en Imagen PNG -->
+        <div class="avatar-container" id="mia-face">
+            <img id="avatar-img" src="/static/avatars/neutral.png" alt="MIA Avatar">
+        </div>
+
+        <div class="status-panel">
+            <h2 id="state-text">DURMIENDO</h2>
+        </div>
+
+        <div class="subtitle-box" id="subtitle-box">
+            <p id="subtitle-text">...</p>
+        </div>
+
+        <!-- Eliminados: Botones físicos, todo se maneja por celular nativo -->
+
+        <!-- SOCKET IO -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+        <script>
+            const socket = io();
+
+            const stateText = document.getElementById('state-text');
+            const subtitleText = document.getElementById('subtitle-text');
+            const avatarImg = document.getElementById('avatar-img');
+            const statusDot = document.getElementById('status-dot');
+            const statusLabel = document.getElementById('status-label');
+
+            // --- Estado de conexión Socket.IO ---
+            socket.on('connect', () => {
+                statusDot.style.background = '#00ff88';
+                statusDot.style.boxShadow = '0 0 8px #00ff88';
+                statusLabel.textContent = 'MIA Conectada';
+                statusLabel.style.color = '#00ff88';
+                // Pedir al servidor que emita el estado actual
+                socket.emit('request_state');
+            });
+
+            socket.on('disconnect', () => {
+                statusDot.style.background = '#ff3366';
+                statusDot.style.boxShadow = '0 0 8px #ff3366';
+                statusLabel.textContent = 'MIA Desconectada';
+                statusLabel.style.color = '#ff3366';
+            });
+
+
+            // Mapa de imágenes
+            const imgMap = {
+                neutral: '/static/avatars/neutral.png',
+                feliz: '/static/avatars/feliz.png',
+                riendose: '/static/avatars/riendose.png',
+                enojada: '/static/avatars/enojada.png',
+                triste: '/static/avatars/triste.png',
+                llorando: '/static/avatars/llorando.png',
+                pensando: '/static/avatars/pensando.png',
+                vision: '/static/avatars/cuerpo-completo.jpeg',
+                hablando: '/static/avatars/hablando.png',
+                blink: '/static/avatars/neutral-ojo-cerrado.jpeg',
+                boca_abierta_ojos_cerrado: '/static/avatars/boca-abierta-ojos-cerrado.png',
+                hablando_semi_abierta: '/static/avatars/hablando_semi_abierta.png',
+                hablando_media_abierta: '/static/avatars/hablando_media_abierta.png',
+                hablando_pronunciando: '/static/avatars/hablando_pronunciando.png'
+            };
+
+            let currentEmotion = 'neutral';
+            let isTalking = false;
+            let talkInterval = null;
+
+            // Frames para la animación de pensar
+            const thinkingFrames = [
+                '/static/avatars/pensando.png',
+                '/static/avatars/pensando2.jpeg',
+                '/static/avatars/pensando3.jpeg',
+                '/static/avatars/pensando4.jpeg'
+            ];
+            let currentThinkingFrame = 0;
+            let thinkingInterval = null;
+
+            function startThinkingAnimation() {
+                stopThinkingAnimation();
+                avatarImg.src = thinkingFrames[0];
+                currentThinkingFrame = 1;
+                avatarImg.classList.add('thinking-animation');
+                thinkingInterval = setInterval(() => {
+                    avatarImg.src = thinkingFrames[currentThinkingFrame];
+                    currentThinkingFrame = (currentThinkingFrame + 1) % thinkingFrames.length;
+                }, 600);
+            }
+
+            function stopThinkingAnimation() {
+                if (thinkingInterval) {
+                    clearInterval(thinkingInterval);
+                    thinkingInterval = null;
+                }
+                avatarImg.classList.remove('thinking-animation');
+            }
+
+            // Variables para suavizado y ritmo natural del movimiento de boca (Lip-Sync)
+            let lastMouthState = 'closed';
+            let lastMouthStateChangeTime = 0;
+            let lastEmotionPlayed = 'neutral';
+            const MIN_OPEN_DURATION = 130;  // ms que la boca debe quedarse abierta
+            const MIN_CLOSED_DURATION = 90; // ms que la boca debe quedarse cerrada
+
+            // Suavizado dinámico del volumen y tasa de frames
+            let smoothAverage = 0;
+            let lastImageUpdateTime = 0;
+            const IMAGE_UPDATE_THROTTLE = 75; // 75ms para un ritmo de habla y cambio de frames más natural y pausado
+
+            // Analizador simple de emociones por palabras clave
+            function analyzeEmotion(text) {
+                if (!text) return 'neutral';
+                text = text.toLowerCase();
+
+                if (text.match(/llorar|lloro|despedida|llorando|lágrimas/)) return 'llorando';
+                if (text.match(/chao|adiós|adios|me voy|triste|pena|mal|duele/)) return 'triste';
+                if (text.match(/enoj|molest|odio|maldit|rabia|furia|tonto|estúpid/)) return 'enojada';
+                if (text.match(/chiste|jaj|jej|brom|ris|divertid/)) return 'riendose';
+                if (text.match(/feliz|alegre|bien|genial|graci|hola|excelente|amor/)) return 'feliz';
+
+                return 'neutral';
+            }
+
+            // --- Mapeo dinámico de bocas según la emoción activa ---
+            function getSpeakingFrames(emotion) {
+                const closedFrame = imgMap[emotion] || imgMap.neutral;
+                let openFrame = imgMap.hablando;
+
+                // Si está alegre/riendose usa "riendose" como boca abierta
+                if (emotion === 'feliz' || emotion === 'riendose') {
+                    openFrame = imgMap.riendose;
+                }
+                // Si está triste/llorando usa "llorando" como boca abierta
+                else if (emotion === 'triste' || emotion === 'llorando') {
+                    openFrame = imgMap.llorando;
+                }
+
+                return { closed: closedFrame, open: openFrame };
+            }
+
+            // --- Web Audio API para Lip-Sync en tiempo real ---
+            let audioCtx = null;
+            let analyser = null;
+            let dataArray = null;
+            let sourceMap = new WeakMap();
+            let monitorInterval = null;
+
+            function initAudioContext(audioElement) {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 256;
+                    const bufferLength = analyser.frequencyBinCount;
+                    dataArray = new Uint8Array(bufferLength);
+                }
+
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                if (!sourceMap.has(audioElement)) {
+                    try {
+                        const source = audioCtx.createMediaElementSource(audioElement);
+                        source.connect(analyser);
+                        analyser.connect(audioCtx.destination);
+                        sourceMap.set(audioElement, source);
+                    } catch (e) {
+                        console.warn("Audio connection warning:", e);
+                    }
+                }
+            }
+
+            function startVolumeMonitor() {
+                if (monitorInterval) {
+                    cancelAnimationFrame(monitorInterval);
+                }
+
+                function updateMouth() {
+                    if (!isPlaying || !analyser) {
+                        stopTalkingAnimation();
+                        return;
+                    }
+
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    let activeFrequencies = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        sum += dataArray[i];
+                        if (dataArray[i] > 0) activeFrequencies++;
+                    }
+
+                    let average = activeFrequencies > 0 ? (sum / activeFrequencies) : 0;
+
+                    // Suavizado exponencial para evitar saltos bruscos
+                    smoothAverage = 0.6 * smoothAverage + 0.4 * average;
+
+                    const now = Date.now();
+                    if (now - lastImageUpdateTime >= IMAGE_UPDATE_THROTTLE) {
+                        const frames = getSpeakingFrames(currentEmotion);
+                        let targetImg = frames.closed;
+                        let targetTransform = 'scaleY(1) translateY(0)';
+
+                        if (smoothAverage > 10) {
+                            isTalking = true;
+                            if (smoothAverage <= 20) {
+                                targetImg = imgMap.hablando_semi_abierta;
+                                targetTransform = 'scaleY(1.01) translateY(-1px)';
+                            } else if (smoothAverage <= 35) {
+                                targetImg = imgMap.hablando_media_abierta;
+                                targetTransform = 'scaleY(1.02) translateY(-2px)';
+                            } else {
+                                // Alternar de forma rítmica (cada 150ms) en lugar de aleatorio salvaje
+                                const cycle = Math.floor(now / 150) % 2;
+                                targetImg = (cycle === 0) ? imgMap.hablando : imgMap.hablando_pronunciando;
+                                targetTransform = 'scaleY(1.03) translateY(-3px)';
+                            }
+
+                            // Parpadeo aleatorio al hablar (ojos cerrados con boca abierta)
+                            if (Math.random() < 0.12) {
+                                targetImg = imgMap.boca_abierta_ojos_cerrado;
+                            }
+                        } else {
+                            isTalking = false;
+                            targetImg = frames.closed;
+                        }
+
+                        const expectedUrl = window.location.origin + targetImg;
+                        if (avatarImg.src !== expectedUrl) {
+                            avatarImg.src = targetImg;
+                            avatarImg.style.transform = targetTransform;
+                        }
+                        lastImageUpdateTime = now;
+                    }
+
+                    monitorInterval = requestAnimationFrame(updateMouth);
+                }
+
+                updateMouth();
+            }
+
+            function stopTalkingAnimation() {
+                isTalking = false;
+                lastMouthState = 'closed';
+                lastMouthStateChangeTime = 0;
+                smoothAverage = 0;
+                if (monitorInterval) {
+                    cancelAnimationFrame(monitorInterval);
+                    monitorInterval = null;
+                }
+                const frames = getSpeakingFrames(currentEmotion);
+                avatarImg.src = frames.closed;
+                avatarImg.style.transform = 'scaleY(1) translateY(0)';
+            }
+
+            // --- Parpadeo Ocasional ---
+            function scheduleBlink() {
+                if (!isTalking && (stateText.textContent === 'DURMIENDO' || currentEmotion === 'neutral' || currentEmotion === 'feliz')) {
+                    const previousSrc = avatarImg.src;
+                    avatarImg.src = imgMap.blink;
+                    setTimeout(() => {
+                        if (!isTalking && (stateText.textContent === 'DURMIENDO' || currentEmotion === 'neutral' || currentEmotion === 'feliz')) {
+                            avatarImg.src = previousSrc;
+                        }
+                    }, 150);
+                }
+                setTimeout(scheduleBlink, 2500 + Math.random() * 4000);
+            }
+            setTimeout(scheduleBlink, 2000);
+
+            // Mapeo seguro de estados visuales 
+            let allAudioReceived = false;
+
+            socket.on('state_update', (data) => {
+                const state = data.state;
+                const text = data.text || '';
+
+                // Limpiar clases de animación previas y detener temporizadores de pensar
+                avatarImg.classList.remove('thinking-animation');
+                stopThinkingAnimation();
+
+                // Al empezar un nuevo turno de escucha o pensamiento, reseteamos el flag de audio completado
+                if (state === 'listening' || state === 'thinking') {
+                    allAudioReceived = false;
+                }
+
+                // Detectar posible emoción del texto del usuario o estado interno
+                if (text) {
+                    const newEmotion = analyzeEmotion(text);
+                    if (newEmotion !== 'neutral') {
+                        currentEmotion = newEmotion;
+                    }
+                }
+
+                switch (state) {
+                    case 'all_audio_sent':
+                        allAudioReceived = true;
+                        // Si ya se envió todo y la cola está vacía y no está reproduciendo, avisar al servidor
+                        if (!isPlaying && audioQueue.length === 0) {
+                            socket.emit('audio_finished');
+                            allAudioReceived = false;
+                        }
+                        break;
+
+                    case 'idle':
+                        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+                        stateText.textContent = 'DURMIENDO';
+                        stateText.style.color = '#444';
+                        subtitleText.textContent = '...';
+                        // Si estaba muy alterada, en idle se relaja a neutral o mantiene feliz
+                        if (['enojada', 'llorando'].includes(currentEmotion)) {
+                            currentEmotion = 'neutral';
+                        }
+                        avatarImg.src = imgMap[currentEmotion] || imgMap.neutral;
+                        avatarImg.style.boxShadow = '0 0 20px rgba(100,100,100,0.5)';
+                        break;
+
+                    case 'preparing_drink':
+                        stateText.textContent = 'PREPARANDO';
+                        stateText.style.color = '#ff8800';
+                        subtitleText.textContent = 'Preparando: ' + text;
+                        avatarImg.src = imgMap.feliz;
+                        avatarImg.style.boxShadow = '0 0 30px #ff8800';
+
+                        // Resaltar en el menú
+                        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+                        let drinkClass = text.toLowerCase().replace(" ", "");
+                        if (drinkClass.includes("tormenta") || drinkClass.includes("purpura") || drinkClass.includes("púrpura")) document.getElementById("menu-tormenta").classList.add("active");
+                        if (drinkClass.includes("brisa") || drinkClass.includes("marina")) document.getElementById("menu-brisa").classList.add("active");
+                        if (drinkClass.includes("atardecer")) document.getElementById("menu-atardecer").classList.add("active");
+                        if (drinkClass.includes("bandera")) document.getElementById("menu-bandera").classList.add("active");
+                        break;
+
+                    case 'listening':
+                        stateText.textContent = 'ESCUCHANDO';
+                        stateText.style.color = '#00ff88';
+                        subtitleText.textContent = text || '¿Sí?';
+                        currentEmotion = 'feliz'; // Siempre atenta y feliz al escuchar
+                        avatarImg.src = imgMap.feliz;
+                        avatarImg.style.boxShadow = '0 0 40px rgba(0, 255, 136, 0.6)';
+                        break;
+
+                    case 'thinking':
+                        stateText.textContent = 'PENSANDO';
+                        stateText.style.color = '#b200ff';
+                        subtitleText.textContent = text || 'Procesando...';
+                        avatarImg.style.boxShadow = '0 0 40px rgba(178, 0, 255, 0.6)';
+                        startThinkingAnimation();
+                        break;
+
+                    case 'vision':
+                        stateText.textContent = 'VIENDO';
+                        stateText.style.color = '#ff3366';
+                        subtitleText.textContent = text || 'Analizando visión...';
+                        avatarImg.src = imgMap.vision;
+                        avatarImg.style.boxShadow = '0 0 50px rgba(255, 51, 102, 0.8)';
+                        break;
+
+
+                }
+            });
+
+            // --- Nueva lógica de emociones directas ---
+            socket.on('emotion_update', (data) => {
+                const emot = data.emotion;
+                if (imgMap[emot]) {
+                    currentEmotion = emot;
+                    if (!isTalking) {
+                        avatarImg.src = imgMap[emot];
+                    }
+                }
+            });
+
+            // --- Interrupción de audio ---
+            socket.on('stop_audio', () => {
+                console.log("⏹️ Interrupción de audio recibida");
+                audioQueue = []; // Vaciar cola
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+                isPlaying = false;
+                stopTalkingAnimation();
+            });
+
+            // --- Cola de Audio para Streaming (Chunked TTS) ---
+            let audioQueue = [];
+            let isPlaying = false;
+            let currentAudio = null;
+
+            socket.on('play_audio_chunk', (data) => {
+                const audioB64 = data.audio_b64;
+                const text = data.text;
+
+                // Analizar la emoción del fragmento que llega (Legacy fallback)
+                const newEmot = analyzeEmotion(text);
+                if (newEmot !== 'neutral') currentEmotion = newEmot;
+
+                // Pre-cargar y decodificar el objeto Audio inmediatamente en memoria
+                const audioObj = new Audio("data:audio/mp3;base64," + audioB64);
+                audioObj.preload = "auto";
+
+                // Lo encolamos ya instanciado para reproducirse sin delay
+                audioQueue.push({ audio: audioObj, text: text, emotion: currentEmotion });
+
+                // Si no estamos reproduciendo nada, iniciar el proceso
+                if (!isPlaying) {
+                    playNextInQueue();
+                }
+            });
+
+            function playNextInQueue() {
+                if (audioQueue.length === 0) {
+                    isPlaying = false;
+                    stopTalkingAnimation();
+
+                    // Solo notificar al servidor si ya recibimos la confirmación de que se envió todo el audio
+                    if (allAudioReceived) {
+                        socket.emit('audio_finished');
+                        allAudioReceived = false;
+                    }
+
+                    // Dormir
+                    stateText.textContent = 'DURMIENDO';
+                    stateText.style.color = '#444';
+                    subtitleText.textContent = '...';
+                    avatarImg.style.boxShadow = '0 0 20px rgba(100,100,100,0.5)';
+                    avatarImg.src = imgMap[currentEmotion] || imgMap.neutral;
+                    return;
+                }
+
+                isPlaying = true;
+                const chunk = audioQueue.shift();
+                currentEmotion = chunk.emotion;
+
+                // Interfaz visual
+                stateText.textContent = 'HABLANDO';
+                stateText.style.color = '#ffcf00';
+                subtitleText.textContent = chunk.text;
+                avatarImg.style.boxShadow = '0 0 40px rgba(255, 207, 0, 0.6)';
+
+                currentAudio = chunk.audio;
+
+                try {
+                    initAudioContext(currentAudio);
+                } catch (e) {
+                    console.error("Error al inicializar AudioContext:", e);
+                }
+
+                currentAudio.onended = () => {
+                    playNextInQueue();
+                };
+
+                startVolumeMonitor();
+
+                currentAudio.play().catch(e => {
+                    console.error("Error al reproducir audio chunk:", e);
+                    playNextInQueue(); // fallar suave e intentar reproducir el proximo
+                });
+            }
+
+            // --- Auto-Unlock Overlay ---
+            const overlay = document.getElementById('unlock-overlay');
+            overlay.addEventListener('click', () => {
+                unlockAudio();
+                overlay.style.display = 'none';
+            });
+
+            function unlockAudio() {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 256;
+                    const bufferLength = analyser.frequencyBinCount;
+                    dataArray = new Uint8Array(bufferLength);
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+        </script>
+</body>
+
+</html>

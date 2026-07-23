@@ -1,0 +1,24 @@
+{
+  "bebidas": [
+    {
+      "nombre": "Margarita",
+      "ingredientes": ["Margarita (lista)"],
+      "descripcion": "El famoso cóctel mexicano, perfecto balance entre ácido y dulce."
+    },
+    {
+      "nombre": "Cuba Libre",
+      "ingredientes": ["Cuba Libre (lista)"],
+      "descripcion": "El trago cubano clásico con ron y Coca-Cola."
+    },
+    {
+      "nombre": "Mojito",
+      "ingredientes": ["Mojito (listo)"],
+      "descripcion": "Un clásico trago refrescante y aromático."
+    },
+    {
+      "nombre": "Tequila Sunrise",
+      "ingredientes": ["Tequila Sunrise (listo)"],
+      "descripcion": "Trago visualmente espectacular con capas de colores vibrantes."
+    }
+  ]
+}

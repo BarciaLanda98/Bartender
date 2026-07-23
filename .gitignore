@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+mia_memory/
+temp_vision.jpg
+.env
+.claude/

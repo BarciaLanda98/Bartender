@@ -1,0 +1,222 @@
+:root {
+    --color-idle: #00f0ff;
+    --color-listen: #00ff88;
+    --color-think: #b200ff;
+    --color-speak: #ffcf00;
+    --color-vision: #ff3366;
+    --bg-dark: #050508;
+    --eye-base: rgba(255, 255, 255, 0.9);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Fondo Estrellado Suave */
+#particles-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
+    z-index: -1;
+}
+
+.mia-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    width: 100%;
+}
+
+/* -------------------------------------
+   LA CARA ANIME (OJOS)
+-------------------------------------- */
+.anime-face {
+    display: flex;
+    gap: 80px;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.eye {
+    width: 140px;
+    height: 180px;
+    background: var(--eye-base);
+    border-radius: 50% 50% 40% 40% / 70% 70% 30% 30%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.2), inset 0px -10px 20px rgba(0,0,0,0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.eye::before {
+    /* Pestaña superior anime */
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    height: 30px;
+    background: #000;
+    border-radius: 50%;
+    transform: translateY(-20px);
+    transition: transform 0.15s ease;
+}
+
+.pupil {
+    width: 70px;
+    height: 110px;
+    background: radial-gradient(circle at 30% 30%, #555, #000);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px var(--color-idle);
+    transition: all 0.3s ease;
+}
+
+.glow {
+    width: 25px;
+    height: 35px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    filter: blur(2px);
+    opacity: 0.8;
+}
+
+/* Parpadeo Automático */
+@keyframes blink {
+    0%, 96%, 100% { transform: scaleY(1); }
+    98% { transform: scaleY(0.1); }
+}
+.anime-face {
+    animation: blink 4s infinite;
+}
+
+/* -------------------------------------
+   ESTADOS DE MIA
+-------------------------------------- */
+
+/* IDLE: Respiración lenta */
+.state-idle .eye {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+.state-idle .pupil {
+    box-shadow: 0 0 20px var(--color-idle);
+}
+
+/* LISTENING: Ojos bien abiertos y listos */
+.state-listening .eye {
+    transform: scaleY(1.1);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+}
+.state-listening .pupil {
+    box-shadow: 0 0 25px var(--color-listen);
+    background: radial-gradient(circle at 30% 30%, #224422, #000);
+}
+
+/* THINKING: Entrecerrando ojos sutilmente / Viendo de lado */
+.state-thinking .eye {
+    height: 160px;
+    border-radius: 50% 50% 40% 40% / 50% 50% 30% 30%;
+    box-shadow: 0 0 40px rgba(178, 0, 255, 0.6);
+}
+.state-thinking .pupil {
+    left: 70%;
+    box-shadow: 0 0 30px var(--color-think);
+    background: radial-gradient(circle at 30% 30%, #331144, #000);
+    animation: tremble 0.5s infinite alternate;
+}
+@keyframes tremble {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) scale(0.95); }
+}
+
+/* SPEAKING: Feliz / Curvas hacia arriba */
+.state-speaking .eye {
+    border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+    transform: scaleY(0.9);
+    box-shadow: 0 0 30px rgba(255, 207, 0, 0.6);
+}
+.state-speaking .pupil {
+    top: 45%;
+    box-shadow: 0 0 40px var(--color-speak);
+    background: radial-gradient(circle at 30% 30%, #443311, #000);
+    animation: speak-bounce 0.3s infinite alternate;
+}
+@keyframes speak-bounce {
+    0% { transform: translate(-50%, -50%) scaleY(1); }
+    100% { transform: translate(-50%, -50%) scaleY(1.1); }
+}
+
+/* VISION: Escaneo rojo letal */
+.state-vision .eye {
+    border-radius: 0;
+    height: 100px;
+    box-shadow: 0 0 50px rgba(255, 51, 102, 0.8);
+}
+.state-vision .pupil {
+    box-shadow: 0 0 50px var(--color-vision);
+    background: radial-gradient(circle at center, #ff3366, #330000);
+    border-radius: 0;
+    width: 100%; height: 5px;
+    animation: scan 1s infinite alternate;
+}
+@keyframes scan {
+    0% { top: 20%; }
+    100% { top: 80%; }
+}
+
+
+/* -------------------------------------
+   UI INFERIOR
+-------------------------------------- */
+.status-panel {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.status-indicator h2 {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 4px;
+    font-size: 1.2rem;
+    color: var(--color-idle);
+    transition: color 0.3s;
+}
+
+.subtitle-box {
+    margin-top: 30px;
+    min-height: 80px;
+    max-width: 600px;
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+    padding: 20px 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+}
+
+#subtitle-text {
+    font-size: 1.3rem;
+    line-height: 1.5;
+    color: #eee;
+}

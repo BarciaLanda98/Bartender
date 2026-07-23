@@ -1,0 +1,94 @@
+{
+  "ingredientes_conectados": [
+    "Refresco de toronja (Witi)",
+    "Jugo de limón",
+    "Tequila",
+    "Licor de naranja"
+  ],
+  "bebidas": [
+    {
+      "id": 1,
+      "nombre": "Paloma",
+      "tipo": "coctel",
+      "ingredientes_necesarios": [
+        {
+          "ingrediente": "Tequila",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Refresco de toronja (Witi)",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Jugo de limón",
+          "cantidad_ml": 15
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "nombre": "Margarita con toronja",
+      "tipo": "coctel",
+      "ingredientes_necesarios": [
+        {
+          "ingrediente": "Tequila",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Licor de naranja",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Jugo de limón",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Refresco de toronja (Witi)",
+          "cantidad_ml": 20
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "nombre": "Tequila Citrus",
+      "tipo": "coctel",
+      "ingredientes_necesarios": [
+        {
+          "ingrediente": "Tequila",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Jugo de limón",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Licor de naranja",
+          "cantidad_ml": 15
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "nombre": "Paloma Dulce",
+      "tipo": "coctel",
+      "ingredientes_necesarios": [
+        {
+          "ingrediente": "Tequila",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Refresco de toronja (Witi)",
+          "cantidad_ml": 15
+        },
+        {
+          "ingrediente": "Licor de naranja",
+          "cantidad_ml": 20
+        },
+        {
+          "ingrediente": "Jugo de limón",
+          "cantidad_ml": 10
+        }
+      ]
+    }
+  ]
+}
