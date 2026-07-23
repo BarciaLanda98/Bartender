@@ -4,7 +4,6 @@ from config import (
     MAX_HISTORY_TURNS, MIA_SYSTEM_PROMPT,
     MEMORY_ENABLED
 )
-from memory import Memory
 import os
 import re
 import requests
@@ -31,6 +30,7 @@ class Brain:
         self.memory = None
         if MEMORY_ENABLED:
             try:
+                from memory import Memory
                 self.memory = Memory()
             except Exception as e:
                 print(f"⚠️ Error inicializando memoria ChromaDB: {e}")
