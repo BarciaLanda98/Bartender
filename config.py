@@ -59,7 +59,9 @@ WAKE_PHRASES = [
 # --- Audio / Ear ---
 # ENABLE_BACKEND_MIC = False apaga por completo la escucha en la laptop
 # Toda la escucha se hará nativamente desde el navegador del celular (Brave/Chrome)
-ENABLE_BACKEND_MIC = True
+# Se puede apagar sin tocar este archivo con: export ENABLE_BACKEND_MIC=false
+# (útil en la Raspberry Pi mientras no tenga micrófono USB conectado)
+ENABLE_BACKEND_MIC = os.environ.get("ENABLE_BACKEND_MIC", "true").strip().lower() != "false"
 MICROPHONE_NAME = ""  # Vacío = usa el default de Windows. En esta PC el default ya resuelve
                       # correctamente a "Micrófono (Realtek(R) Audio)" (verificado). Buscar por
                       # nombre acá es frágil: PyAudio devuelve nombres con encoding roto
