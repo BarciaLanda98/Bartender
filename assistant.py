@@ -251,6 +251,7 @@ class VoiceAssistant:
                             if match_robot:
                                 drink_name = match_robot.group(1).strip()
                                 robot_command = f"PREPARAR:{drink_name}"
+                                print(f"🔧 [DEBUG] robot_command capturado en assistant.py: {robot_command!r}")
                                 combined = re.sub(r'\[?ROBOT:PREPARAR:?\s*[^\]\.\-]+\]?', '', combined, flags=re.IGNORECASE)
 
                             # Separar por signos de puntuación finales

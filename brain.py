@@ -436,6 +436,8 @@ Ve directo al grano (ej: "Veo que tienes un..."). Máximo 2 oraciones."""
                     if drinks_disponibles:
                         target_prepare_drink = random.choice(drinks_disponibles).get("nombre")
 
+        print(f"🔧 [DEBUG] drinks_disponibles={[d.get('nombre') for d in drinks_disponibles]} | target_prepare_drink={target_prepare_drink}")
+
         # 5. Buscar recuerdos en la base de datos vectorial (ChromaDB)
         # Solo buscamos recuerdos si la consulta es explícitamente sobre el pasado/memoria,
         # para evitar inyecciones ruidosas e impedir que el LLM alucine sobre temas anteriores.
@@ -517,8 +519,10 @@ Ve directo al grano (ej: "Veo que tienes un..."). Máximo 2 oraciones."""
                 yield current_chunk.strip()
 
             # Forzar el comando del robot si el usuario pidió preparar y el modelo no lo incluyó en el texto
+            print(f"🔧 [DEBUG] Antes de forzar tag: target_prepare_drink={target_prepare_drink} | full_response={full_response!r}")
             if target_prepare_drink and f"[ROBOT:PREPARAR:{target_prepare_drink}]" not in full_response:
                 robot_cmd = f" [ROBOT:PREPARAR:{target_prepare_drink}]"
+                print(f"🔧 [DEBUG] Yield forzado del tag robot: {robot_cmd!r}")
                 full_response += robot_cmd
                 yield robot_cmd
 
