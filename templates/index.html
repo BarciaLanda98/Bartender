@@ -324,7 +324,7 @@
             <p id="subtitle-text">...</p>
         </div>
 
-        <!-- Eliminados: Botones físicos, todo se maneja por celular nativo -->
+        <button id="btn-ptt">🎤 Hablar</button>
 
         <!-- SOCKET IO -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
@@ -788,6 +788,64 @@
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
+            }
+
+            // --- PTT Web (usa el micrófono del navegador vía Web Speech API) ---
+            const btnPtt = document.getElementById('btn-ptt');
+            const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognitionAPI) {
+                btnPtt.textContent = '🚫 No soportado';
+                btnPtt.disabled = true;
+                console.error('Este navegador no soporta reconocimiento de voz (Web Speech API). Usa Chrome.');
+            } else {
+                const recognition = new SpeechRecognitionAPI();
+                recognition.lang = 'es-419';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                let isListening = false;
+
+                btnPtt.addEventListener('click', () => {
+                    unlockAudio();
+                    if (isListening) return;
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.error('Error iniciando reconocimiento:', e);
+                    }
+                });
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    btnPtt.classList.add('listening');
+                    btnPtt.textContent = '🎤 Escuchando...';
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    console.log('PTT reconoció:', transcript);
+                    btnPtt.classList.remove('listening');
+                    btnPtt.classList.add('processing');
+                    btnPtt.textContent = '⏳ Procesando...';
+                    socket.emit('user_command', { text: transcript });
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Error de reconocimiento de voz:', event.error);
+                    btnPtt.classList.remove('listening', 'processing');
+                    btnPtt.textContent = '🎤 Hablar';
+                    isListening = false;
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    btnPtt.classList.remove('listening');
+                    setTimeout(() => {
+                        btnPtt.classList.remove('processing');
+                        btnPtt.textContent = '🎤 Hablar';
+                    }, 1500);
+                };
             }
         </script>
 </body>
