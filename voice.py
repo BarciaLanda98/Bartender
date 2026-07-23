@@ -3,6 +3,8 @@ import asyncio
 import edge_tts
 import base64
 import os
+import subprocess
+import tempfile
 from queue import Queue
 
 class Voice:
@@ -43,6 +45,11 @@ class Voice:
             asyncio.run(get_bytes())
             
             if audio_bytes:
+                # Reproducir directo por las bocinas de la Raspberry Pi (modo standalone,
+                # sin necesitar un navegador conectado). Si mpg123 no está instalado
+                # (ej. en Windows durante pruebas), falla silencioso y sigue solo con la UI.
+                self._play_local(audio_bytes)
+
                 audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
                 # Emitir a la UI (UI se encarga de cambiar los estados del avatar)
                 if self.on_audio_ready:
@@ -54,6 +61,27 @@ class Voice:
             print(f"❌ Error en síntesis de Edge-TTS: {e}")
         finally:
             self.is_speaking = False
+
+    def _play_local(self, audio_bytes):
+        """Reproduce el MP3 directo por las bocinas conectadas (mpg123)."""
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+                tmp.write(audio_bytes)
+                tmp_path = tmp.name
+            subprocess.run(
+                ["mpg123", "-q", tmp_path],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except FileNotFoundError:
+            pass  # mpg123 no instalado (ej. Windows) - se ignora, sigue solo con la UI web
+        except Exception as e:
+            print(f"⚠️ Error reproduciendo audio local: {e}")
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.remove(tmp_path)
 
     def speak_async(self, text):
         """Encola el texto para ser procesado sin bloquear"""
