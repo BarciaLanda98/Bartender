@@ -36,18 +36,30 @@ class Voice:
         print(f"🔊 MIA dice: {text}")
 
         try:
-            communicate = edge_tts.Communicate(text, "es-MX-DaliaNeural")
             audio_bytes = b""
-            
-            # Streaming en memoria directo de edge-tts
-            async def get_bytes():
-                nonlocal audio_bytes
-                async for chunk in communicate.stream():
-                    if chunk["type"] == "audio":
-                        audio_bytes += chunk["data"]
-            
-            asyncio.run(get_bytes())
-            
+            max_retries = 2
+            for attempt in range(max_retries + 1):
+                try:
+                    communicate = edge_tts.Communicate(text, "es-MX-DaliaNeural")
+                    audio_bytes = b""
+
+                    # Streaming en memoria directo de edge-tts
+                    async def get_bytes():
+                        nonlocal audio_bytes
+                        async for chunk in communicate.stream():
+                            if chunk["type"] == "audio":
+                                audio_bytes += chunk["data"]
+
+                    asyncio.run(get_bytes())
+                    if audio_bytes:
+                        break
+                except Exception as e:
+                    print(f"⚠️ Edge-TTS falló (intento {attempt + 1}/{max_retries + 1}): {e}")
+
+                if attempt < max_retries:
+                    import time as _time
+                    _time.sleep(1)
+
             if audio_bytes:
                 # Reproducir directo por las bocinas de la Raspberry Pi (modo standalone,
                 # sin necesitar un navegador conectado). Si mpg123 no está instalado
