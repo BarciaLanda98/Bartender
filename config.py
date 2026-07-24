@@ -161,7 +161,7 @@ RECETAS_COCTELES = {
         "Jugo de limón": 15,
         "Licor de naranja": 15
     },
-    "Paloma Dulce": {
+    "Amanecer": {
         "Tequila": 15,
         "Refresco de toronja (Witi)": 15,
         "Licor de naranja": 20,
