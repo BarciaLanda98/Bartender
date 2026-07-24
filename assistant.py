@@ -9,7 +9,7 @@ from robot_control import RobotControl
 from config import (
     VISUAL_COMMENT_COOLDOWN, VISION_CHECK_INTERVAL,
     VISION_POST_COMMENT_PAUSE, HEALTH_CHECK_INTERVAL,
-    PROACTIVE_VISION, VISION_KEYWORDS, ENABLE_BACKEND_MIC
+    PROACTIVE_VISION, VISION_WORDS, ENABLE_BACKEND_MIC
 )
 
 
@@ -132,7 +132,7 @@ class VoiceAssistant:
         'Hey MIA mira esto' → True (usar cámara + Moondream)
         """
         text_lower = text.lower()
-        return any(kw in text_lower for kw in VISION_KEYWORDS)
+        return any(kw in text_lower for kw in VISION_WORDS)
 
     def set_state(self, new_state, data=None):
         """Actualiza el estado de MIA y notifica a los listeners (servidor web)"""
