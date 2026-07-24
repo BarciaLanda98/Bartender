@@ -398,7 +398,10 @@ class VoiceAssistant:
 
                         # Ahora bloqueamos la reactivación de listening local del orquestador
                         # hasta que el celular confirme que la COLA EN JavaScript terminó de sonar.
-                        self.audio_playback_done.wait(timeout=60.0)
+                        # Si el audio se reprodujo localmente (Pi standalone, sin navegador
+                        # escuchando), esa confirmación nunca llega — no hay por qué esperarla.
+                        if self.voice.last_used_browser:
+                            self.audio_playback_done.wait(timeout=60.0)
                         
                         # Si hay comando de robot, esperar a que termine y agradecer
                         if robot_command:
@@ -418,7 +421,9 @@ class VoiceAssistant:
                             self.set_state("all_audio_sent")
                             
                             # Esperar a que termine de reproducir el agradecimiento en el navegador
-                            self.audio_playback_done.wait(timeout=10.0)
+                            # (solo aplica si de verdad se mandó ahí, ver nota arriba)
+                            if self.voice.last_used_browser:
+                                self.audio_playback_done.wait(timeout=10.0)
                         
                         self.set_state("idle")
 

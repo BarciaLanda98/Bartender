@@ -17,6 +17,10 @@ class Voice:
         
         # Callback para emitir el audio Base64 hacia el navegador
         self.on_audio_ready = None
+        # True si el último chunk hablado se mandó al navegador (para saber si hay
+        # que esperar su confirmación 'audio_finished', o si ya se reprodujo local
+        # y esa espera no aplica)
+        self.last_used_browser = False
 
         self._worker = threading.Thread(
             target=self._process_queue, daemon=True, name="VoiceWorker"
@@ -55,7 +59,8 @@ class Voice:
                 # (si el navegador está corriendo en la MISMA Pi, ambos salen por la misma
                 # bocina y se escucha duplicado). Solo se emite al navegador cuando no hay
                 # reproducción local disponible (ej. laptop sin mpg123).
-                if not played_locally and self.on_audio_ready:
+                self.last_used_browser = not played_locally and bool(self.on_audio_ready)
+                if self.last_used_browser:
                     audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
                     self.on_audio_ready(text, audio_b64)
             else:
