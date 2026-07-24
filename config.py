@@ -32,7 +32,7 @@ LOCAL_OLLAMA_URL = "http://localhost:11434"
 
 # URLs de los modelos:
 # BRAIN_URL = "claude" activa el cerebro en la nube (Claude API) en vez de Ollama local.
-# Necesita la variable de entorno ANTHROPIC_API_KEY configurada. Útil para correr en la
+# Necesita la variable de entorno ANTHROPIC_API_ configurada. Útil para correr en la
 # Raspberry Pi sola, sin laptop, ya que Ollama es muy pesado para el CPU de la Pi.
 # Para volver a Ollama local: BRAIN_URL = LOCAL_OLLAMA_URL
 BRAIN_URL = "claude"
@@ -95,7 +95,7 @@ DEBUG_EAR = True              # True = imprimir todo lo que el micrófono escuch
 # --- Routing Inteligente (visión solo cuando se pide) ---
 # Si el comando contiene alguna de estas palabras -> usar cámara + Moondream
 # Si no las contiene -> responder rápido sin visión
-VISION_KEYWORDS = [
+VISION_WORDS = [
     "mira", "observa", "foto", "fotografía",
     "imagen", "cámara", "camara", "muestra",
     "qué ves", "que ves", "qué hay", "que hay",
