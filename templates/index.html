@@ -698,10 +698,21 @@
             let audioQueue = [];
             let isPlaying = false;
             let currentAudio = null;
+            let lastAudioB64 = null;
 
             socket.on('play_audio_chunk', (data) => {
                 const audioB64 = data.audio_b64;
                 const text = data.text;
+
+                // Protección anti-duplicado: en la Pi (Chromium más lento / red más
+                // inestable), Socket.IO a veces reentrega el mismo evento (reconexión,
+                // reintento), causando que la misma frase se reproduzca dos veces.
+                // Si llega el mismo audio exacto que el último encolado, se ignora.
+                if (audioB64 === lastAudioB64) {
+                    console.warn("⚠️ Chunk de audio duplicado ignorado:", text);
+                    return;
+                }
+                lastAudioB64 = audioB64;
 
                 // Analizar la emoción del fragmento que llega (Legacy fallback)
                 const newEmot = analyzeEmotion(text);
