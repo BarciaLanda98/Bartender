@@ -47,12 +47,16 @@ class Voice:
             if audio_bytes:
                 # Reproducir directo por las bocinas de la Raspberry Pi (modo standalone,
                 # sin necesitar un navegador conectado). Si mpg123 no está instalado
-                # (ej. en Windows durante pruebas), falla silencioso y sigue solo con la UI.
-                self._play_local(audio_bytes)
+                # (ej. en Windows durante pruebas), no reproduce nada aquí y cae al
+                # navegador como antes.
+                played_locally = self._play_local(audio_bytes)
 
-                audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
-                # Emitir a la UI (UI se encarga de cambiar los estados del avatar)
-                if self.on_audio_ready:
+                # Si ya sonó por la bocina de la Pi, NO lo mandamos también al navegador
+                # (si el navegador está corriendo en la MISMA Pi, ambos salen por la misma
+                # bocina y se escucha duplicado). Solo se emite al navegador cuando no hay
+                # reproducción local disponible (ej. laptop sin mpg123).
+                if not played_locally and self.on_audio_ready:
+                    audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
                     self.on_audio_ready(text, audio_b64)
             else:
                 print("⚠️ No se generaron bytes de audio de Edge-TTS.")
@@ -63,24 +67,28 @@ class Voice:
             self.is_speaking = False
 
     def _play_local(self, audio_bytes):
-        """Reproduce el MP3 directo por las bocinas conectadas (mpg123)."""
+        """Reproduce el MP3 directo por las bocinas conectadas (mpg123).
+
+        Retorna True si de verdad se reprodujo localmente, False si no (ej. mpg123
+        no instalado) — así el llamador sabe si todavía debe mandarlo al navegador.
+        """
         tmp_path = None
         try:
             with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
                 tmp.write(audio_bytes)
                 tmp_path = tmp.name
-            print(f"🔧 [DEBUG] _play_local: invocando mpg123 UNA vez para {tmp_path} ({len(audio_bytes)} bytes)")
             subprocess.run(
                 ["mpg123", "-q", tmp_path],
                 check=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-            print(f"🔧 [DEBUG] _play_local: mpg123 terminó para {tmp_path}")
+            return True
         except FileNotFoundError:
-            pass  # mpg123 no instalado (ej. Windows) - se ignora, sigue solo con la UI web
+            return False  # mpg123 no instalado (ej. Windows) - cae al navegador
         except Exception as e:
             print(f"⚠️ Error reproduciendo audio local: {e}")
+            return False
         finally:
             if tmp_path and os.path.exists(tmp_path):
                 os.remove(tmp_path)
