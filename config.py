@@ -6,7 +6,8 @@ import os
 # --- Conexión al S25 Ultra (Ollama remoto / Tethering) ---
 S25_PORT = 8080
 S25_IPS = [
-    "192.168.8.72",     # IP WiFi actual del S25 Ultra (Detectada por Socket.IO al conectarse)
+    "10.127.190.60",    # IP WiFi actual del S25 Ultra (Detectada por Socket.IO al conectarse)
+    "192.168.8.72",     # Red anterior
     "10.193.241.97",    # Red anterior
     "127.0.0.1",        # ADB Forward (USB Debugging)
     "localhost",        # ADB Forward Fallback
