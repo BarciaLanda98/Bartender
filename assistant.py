@@ -254,6 +254,11 @@ class VoiceAssistant:
                                 print(f"🔧 [DEBUG] robot_command capturado en assistant.py: {robot_command!r}")
                                 combined = re.sub(r'\[?ROBOT:PREPARAR:?\s*[^\]\.\-]+\]?', '', combined, flags=re.IGNORECASE)
 
+                            # Quitar asteriscos (acotaciones de acción tipo *sirve el trago* o
+                            # negritas markdown **palabra**) para que Edge-TTS no los lea literal
+                            # como la palabra "asterisco".
+                            combined = combined.replace('*', '')
+
                             # Separar por signos de puntuación finales
                             import re as regex
                             # Buscamos puntos, signos de exclamación/interrogación seguidos opcionalmente de un espacio
